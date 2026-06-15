@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КВИК — Управление проектами</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+    <div id="authScreen" class="auth-container">
+        <div class="auth-card">
+            <div class="logo">КВИК</div>
+            <div id="loginForm">
+                <input type="email" id="loginEmail" class="input-field" placeholder="Email" value="demo@kvik.ru">
+                <input type="password" id="loginPassword" class="input-field" placeholder="Пароль" value="123456">
+                <button class="btn" onclick="handleLogin()">Войти</button>
+                <button class="btn link-btn" onclick="showRegister()">Нет аккаунта? Создать</button>
+            </div>
+            <div id="registerForm" style="display:none">
+                <input type="text" id="regName" class="input-field" placeholder="Имя" value="Пользователь">
+                <input type="email" id="regEmail" class="input-field" placeholder="Email" value="demo@kvik.ru">
+                <input type="password" id="regPassword" class="input-field" placeholder="Пароль" value="123456">
+                <button class="btn" onclick="handleRegister()">Зарегистрироваться</button>
+                <button class="btn link-btn" onclick="showLogin()">Уже есть аккаунт? Войти</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainApp" class="main-app">
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <button id="backToProjectsBtn" class="back-btn" style="display:none" onclick="goToProjects()">← Назад к проектам</button>
+                <div class="logo" style="font-size:24px; margin:0">КВИК</div>
+            </div>
+            <div class="user-info">
+                <span id="userNameDisplay">Пользователь</span>
+                <button class="btn btn-sm" onclick="logout()">Выйти</button>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="projects">Проекты</button>
+            <button class="nav-tab" data-tab="alltasks">Мои задачи</button>
+            <button class="nav-tab" data-tab="analytics">Аналитика</button>
+            <button class="nav-tab" data-tab="settings">Настройки</button>
+        </div>
+
+        <div class="content">
+            <div id="projectsSection" class="section active">
+                <div id="projectsHeader" class="projects-header">
+                    <div class="flex-between">
+                        <h2>Мои проекты</h2>
+                        <button class="btn" onclick="openProjectModal()">+ Новый проект</button>
+                    </div>
+                </div>
+                <div id="projectsList" class="projects-grid"></div>
+            </div>
+
+<div id="alltasksSection" class="section">
+    <div class="flex-between" style="margin-bottom: 24px;">
+        <h2>Мои задачи</h2>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="search-wrapper" style="position: relative;">
+                <span class="search-icon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%);"></span>
+                <input type="text" id="searchTasksInput" class="input-field" placeholder="Поиск задач..." style="padding: 8px 16px 8px 36px; width: 220px; border-radius: 40px;">
+            </div>
+            <button class="btn btn-sm" style="background: white; color: #1f2937; border: 1px solid #cbd5e1;" onclick="showFilterMenu(event)">Фильтр</button>
+            <button class="btn btn-sm" style="background: white; color: #1f2937; border: 1px solid #cbd5e1;" onclick="showSortMenu(event)">Сортировка</button>
+            <button class="btn btn-sm" style="background: #306fb7; color: white;" onclick="clearAllFilters()">Сбросить</button>
+        </div>
+    </div>
+    <div id="activeFilters" class="active-filters"></div>
+    <div id="allTasksContainer"></div>
+</div>
+
+<div id="analyticsSection" class="section">
+    <div class="flex-between" style="margin-bottom: 24px;">
+        <h2>Аналитика</h2>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <select id="exportFormatSelect" class="btn-outline" style="padding: 8px 16px; border-radius: 40px; font-size: 14px; cursor: pointer;">
+                <option disabled selected>Экспорт отчёта</option>
+                <option value="pdf">PDF</option>
+                <option value="csv">CSV</option>
+                <option value="jpg">JPG</option>
+                <option value="png">PNG</option>
+            </select>
+            <select id="periodSelect" class="btn-outline" style="padding: 8px 16px; border-radius: 40px; font-size: 14px; cursor: pointer;">
+                <option disabled selected>Период</option>
+                <option value="week">За неделю</option>
+                <option value="month">За месяц</option>
+                <option value="year">За год</option>
+                <option value="all">За всё время</option>
+            </select>
+        </div>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Задачи по статусам</h3>
+            <canvas id="statusChart" width="200" height="200"></canvas>
+        </div>
+        <div class="stat-card">
+            <h3>Прогресс проектов</h3>
+            <div id="projectsProgress"></div>
+        </div>
+        <div class="stat-card">
+            <h3>Динамика задач</h3>
+            <canvas id="weeklyChart" width="300" height="150"></canvas>
+        </div>
+        <div class="stat-card">
+            <h3>Рейтинг участников</h3>
+            <ul class="rating-list" id="ratingList"></ul>
+        </div>
+    </div>
+</div>
+
+
+
+            <div id="settingsSection" class="section">
+                <div class="settings-section">
+                    <h3>Профиль</h3>
+                    <div class="setting-row"><span>Имя: <span id="profileName">Пользователь</span></span><button class="btn btn-outline btn-sm" onclick="editProfile()">Редактировать</button></div>
+                    <div class="setting-row"><span>Email: <span id="profileEmail">demo@kvik.ru</span></span></div>
+                    <div class="setting-row"><span>Пароль: ••••••</span><button class="btn btn-outline btn-sm" onclick="alert('Смена пароля (демо)')">Сменить пароль</button></div>
+                </div>
+                <div class="settings-section">
+                    <h3>Внешний вид</h3>
+                    <div class="setting-row"><span>Тема</span><div class="theme-selector"><div class="theme-btn" data-theme="light">Светлая</div><div class="theme-btn" data-theme="dark">Тёмная</div><div class="theme-btn" data-theme="system">Системная</div></div></div>
+                </div>
+                <div class="settings-section">
+                    <h3>Уведомления</h3>
+                    <div class="setting-row"><span>Email-уведомления</span><div class="toggle-switch" id="emailNotifications"></div></div>
+                    <div class="setting-row"><span>Напоминания о дедлайнах</span><div class="toggle-switch" id="deadlineReminders"></div></div>
+                </div>
+                <div class="settings-section">
+                    <h3>Управление командой</h3>
+                    <div id="teamListContainer"></div>
+                    <div class="invite-section">
+                        <div style="display:flex; gap:12px;">
+                            <input type="email" id="inviteEmail" class="input-field" placeholder="Email для приглашения" style="flex:1">
+                            <button class="btn btn-sm" onclick="inviteToTeam()">Пригласить</button>
+                        </div>
+                        <p style="font-size:12px; color:#6b7280; margin-top:8px;">Приглашённые пользователи появятся в команде и смогут быть добавлены в проекты</p>
+                    </div>
+                </div>
+                <button class="btn btn-danger" onclick="logout()" style="margin-top:20px">Выйти</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="projectModal" class="modal">
+    <div class="modal-content">
+        <h2 id="projectModalTitle">Создание проекта</h2>
+        <input type="hidden" id="editingProjectId">
+        <div class="form-group"><label>Название проекта *</label><input type="text" id="projectName" class="input-field"></div>
+        <div class="form-group"><label>Описание</label><textarea id="projectDesc" rows="2"></textarea></div>
+        <div class="form-group"><label>Цвет фона проекта</label>
+            <div class="bg-picker" id="bgPicker">
+                <div class="bg-option" style="background: #fef9c3" data-bg="#fef9c3"></div>
+                <div class="bg-option" style="background: #e0f2fe" data-bg="#e0f2fe"></div>
+                <div class="bg-option" style="background: #e0e7ff" data-bg="#e0e7ff"></div>
+                <div class="bg-option" style="background: #dcfce7" data-bg="#dcfce7"></div>
+                <div class="bg-option" style="background: #ffe4e6" data-bg="#ffe4e6"></div>
+                <div class="bg-option" style="background: #f3e8ff" data-bg="#f3e8ff"></div>
+                <div class="bg-option" style="background: #ffffff" data-bg="#ffffff"></div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Участники проекта</label>
+            <div class="members-section">
+                <div style="font-size:13px; margin-bottom:12px;">Выберите участников из команды для добавления в проект</div>
+                <div id="teamMembersForProject" class="team-members-list"></div>
+                <div style="font-size:12px; margin-top:8px;">Владелец (вы) добавляется автоматически</div>
+            </div>
+        </div>
+        <button class="btn" onclick="saveProject()">Сохранить</button>
+        <button class="btn link-btn" onclick="closeModal('projectModal')">Отмена</button>
+    </div>
+</div>
+
+<div id="taskEditModal" class="modal">
+    <div class="modal-content">
+        <h2 id="taskModalTitle">Редактирование задачи</h2>
+        <input type="hidden" id="editingTaskId">
+        <input type="hidden" id="editingTaskProjectId">
+        <div class="form-group"><label>Название *</label><input type="text" id="taskEditName" class="input-field"></div>
+        <div class="form-group"><label>Описание</label><textarea id="taskEditDesc" rows="2"></textarea></div>
+        <div class="form-group"><label>Приоритет</label><select id="taskEditPriority"><option value="high">Высокий</option><option value="medium">Средний</option><option value="low">Низкий</option></select></div>
+        <div class="form-group"><label>Исполнитель</label><select id="taskEditAssignee"></select></div>
+        <div class="form-group"><label>Дедлайн</label><input type="date" id="taskEditDeadline" class="input-field"></div>
+        <div class="form-group"><label>Статус</label><select id="taskEditStatus"><option value="todo">Нужно сделать</option><option value="progress">В процессе</option><option value="done">Готово</option></select></div>
+        <button class="btn" onclick="saveTask()">Сохранить</button>
+        <button class="btn link-btn" onclick="closeModal('taskEditModal')">Отмена</button>
+    </div>
+</div>
+
+<div id="taskDetailModal" class="modal">
+    <div class="modal-content" id="taskDetailContent"></div>
+</div>
+
+<div id="confirmModal" class="modal">
+    <div class="modal-content confirm-dialog">
+        <h3 id="confirmTitle">Подтверждение</h3>
+        <p id="confirmMessage" style="margin: 20px 0;">Вы уверены, что хотите удалить?</p>
+        <div class="confirm-dialog-buttons">
+            <button class="btn btn-danger btn-sm" onclick="confirmAction(true)">Удалить</button>
+            <button class="btn btn-outline btn-sm" onclick="confirmAction(false)">Отмена</button>
+        </div>
+    </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/modals.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
